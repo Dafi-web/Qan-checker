@@ -54,22 +54,25 @@ export default function QanDetailPage() {
 
   function logout() {
     clearAuth();
-    navigate('/admin/login');
+    navigate('/login');
   }
 
   return (
     <div className="page admin-page">
       <header className="topbar">
-        <Link className="brand" to="/">
+        <Link className="brand" to="/admin">
           <span className="brand-mark" aria-hidden />
-          <span className="brand-name">QAN Checker</span>
+          <div className="brand-text">
+            <span className="brand-name">QAN Checker</span>
+            <span className="brand-sub">Administration</span>
+          </div>
         </Link>
         <div className="topbar-actions">
           <Link className="topbar-link" to="/admin">
-            Dashboard
+            Back to console
           </Link>
           <button type="button" className="ghost-btn" onClick={logout}>
-            Log out
+            Sign out
           </button>
         </div>
       </header>

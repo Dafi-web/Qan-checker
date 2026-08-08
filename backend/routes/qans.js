@@ -1,6 +1,7 @@
 const express = require('express');
 const Qan = require('../models/Qan');
-const { protect } = require('../middleware/auth');
+const { protect, requireAdmin } = require('../middleware/auth');
+const { MAX_SERIAL_LENGTH, parseSerials } = require('../utils/serials');
 
 const router = express.Router();
 
@@ -10,18 +11,17 @@ function normalizeSerial(value) {
 
 function parseSerialList(input) {
   if (Array.isArray(input)) {
-    return input.map(normalizeSerial).filter(Boolean);
+    const joined = input.join('\n');
+    return parseSerials(joined).serials;
   }
-  if (typeof input === 'string') {
-    return input
-      .split(/[\n,;]+/)
-      .map(normalizeSerial)
-      .filter(Boolean);
-  }
-  return [];
+  return parseSerials(input).serials;
 }
 
-router.use(protect);
+function rejectTooLong(serials) {
+  return serials.filter((s) => s.length > MAX_SERIAL_LENGTH);
+}
+
+router.use(protect, requireAdmin);
 
 router.get('/', async (req, res) => {
   try {
@@ -50,9 +50,16 @@ router.post('/', async (req, res) => {
     }
 
     const serials = [...new Set(parseSerialList(serialNumbers))];
+    const tooLong = rejectTooLong(serials);
+    if (tooLong.length) {
+      return res.status(400).json({
+        message: `Each serial must be ${MAX_SERIAL_LENGTH} characters or fewer`,
+        invalid: tooLong.slice(0, 5),
+      });
+    }
 
     const qan = await Qan.create({
-      qanNumber: normalizeSerial(qanNumber),
+      qanNumber: String(qanNumber).trim().toUpperCase(),
       title: title.trim(),
       description: (description || '').trim(),
       serialNumbers: serials,
@@ -99,6 +106,14 @@ router.post('/:id/serials', async (req, res) => {
     const incoming = parseSerialList(req.body.serialNumbers ?? req.body.serials);
     if (!incoming.length) {
       return res.status(400).json({ message: 'Provide at least one serial number' });
+    }
+
+    const tooLong = rejectTooLong(incoming);
+    if (tooLong.length) {
+      return res.status(400).json({
+        message: `Each serial must be ${MAX_SERIAL_LENGTH} characters or fewer`,
+        invalid: tooLong.slice(0, 5),
+      });
     }
 
     const existing = new Set(qan.serialNumbers.map(normalizeSerial));

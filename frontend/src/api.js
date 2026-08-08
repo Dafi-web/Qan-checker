@@ -26,6 +26,17 @@ export function isLoggedIn() {
   return Boolean(getToken());
 }
 
+export function isAdmin() {
+  return getStoredUser()?.role === 'admin';
+}
+
+function redirectToLogin() {
+  clearAuth();
+  if (window.location.pathname !== '/login') {
+    window.location.assign('/login');
+  }
+}
+
 async function request(path, options = {}) {
   const headers = {
     'Content-Type': 'application/json',
@@ -41,6 +52,12 @@ async function request(path, options = {}) {
   });
 
   const data = await res.json().catch(() => ({}));
+
+  if (res.status === 401 && !path.includes('/api/auth/login')) {
+    redirectToLogin();
+    throw new Error(data.message || 'Please sign in again');
+  }
+
   if (!res.ok) {
     throw new Error(data.message || 'Request failed');
   }
@@ -54,11 +71,12 @@ export const api = {
       body: JSON.stringify({ username, password }),
     }),
   me: () => request('/api/auth/me'),
-  checkSerial: (serialNumber) =>
+  checkSerials: (serialNumbers, qanId) =>
     request('/api/check', {
       method: 'POST',
-      body: JSON.stringify({ serialNumber }),
+      body: JSON.stringify({ serialNumbers, qanId: qanId || 'all' }),
     }),
+  listActiveQans: () => request('/api/check/qans'),
   listQans: () => request('/api/qans'),
   getQan: (id) => request(`/api/qans/${id}`),
   createQan: (payload) =>
@@ -82,6 +100,21 @@ export const api = {
     }),
   deleteQan: (id) =>
     request(`/api/qans/${id}`, {
+      method: 'DELETE',
+    }),
+  listUsers: () => request('/api/users'),
+  createUser: (payload) =>
+    request('/api/users', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+  updateUser: (id, payload) =>
+    request(`/api/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    }),
+  deleteUser: (id) =>
+    request(`/api/users/${id}`, {
       method: 'DELETE',
     }),
 };
