@@ -4,7 +4,9 @@
   "outputDirectory": "dist",
   "functions": {
     "api/index.js": {
-      "includeFiles": "{api/**,../backend/**}"
+      "memory": 1024,
+      "maxDuration": 30,
+      "includeFiles": "../backend/**"
     }
   },
   "rewrites": [
