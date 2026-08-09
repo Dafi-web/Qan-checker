@@ -6,7 +6,11 @@ const { protect } = require('../middleware/auth');
 const router = express.Router();
 
 function signToken(userId) {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '8h' });
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET is not set on the server');
+  }
+  return jwt.sign({ id: userId }, secret, { expiresIn: '8h' });
 }
 
 router.post('/login', async (req, res) => {
@@ -26,7 +30,8 @@ router.post('/login', async (req, res) => {
       user: { id: user._id, username: user.username, role: user.role },
     });
   } catch (error) {
-    res.status(500).json({ message: 'Login failed' });
+    console.error('Login error:', error.message);
+    res.status(500).json({ message: error.message || 'Login failed' });
   }
 });
 
