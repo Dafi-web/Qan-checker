@@ -7,6 +7,8 @@ import {
   formatWhileTyping,
   parseSerials,
 } from '../serials';
+import IvyLogo from '../components/IvyLogo';
+import SiteFooter from '../components/SiteFooter';
 
 export default function ShipperHome() {
   const navigate = useNavigate();
@@ -25,7 +27,6 @@ export default function ShipperHome() {
   const { serials: parsedSerials } = useMemo(() => parseSerials(serialText), [serialText]);
   const parsedCount = parsedSerials.length;
 
-  // Admins belong in the console, not on the shipper home.
   useEffect(() => {
     if (isLoggedIn() && getStoredUser()?.role === 'admin') {
       navigate('/admin', { replace: true });
@@ -79,14 +80,12 @@ export default function ShipperHome() {
 
     const tooLong = serials.filter((s) => s.length > MAX_SERIAL_LENGTH);
     if (tooLong.length > 0) {
-      setError(
-        `Each serial can be at most ${MAX_SERIAL_LENGTH} digits. Longer values are not allowed.`
-      );
+      setError(`Each serial can be at most ${MAX_SERIAL_LENGTH} digits.`);
       return;
     }
 
     if (serials.length > MAX_SERIALS) {
-      setError(`Maximum ${MAX_SERIALS} serial numbers per check (you entered ${serials.length})`);
+      setError(`Maximum ${MAX_SERIALS} serials per check (you entered ${serials.length})`);
       return;
     }
 
@@ -130,13 +129,7 @@ export default function ShipperHome() {
   return (
     <div className="page shipper-home">
       <header className="topbar topbar-shipper">
-        <div className="brand">
-          <span className="brand-mark" aria-hidden />
-          <div className="brand-text">
-            <span className="brand-name">QAN Checker</span>
-            <span className="brand-sub">Shipping verification</span>
-          </div>
-        </div>
+        <IvyLogo to="/" size="md" />
         <div className="topbar-actions">
           {loggedIn ? (
             <>
@@ -146,7 +139,7 @@ export default function ShipperHome() {
               </button>
             </>
           ) : (
-            <Link className="topbar-link" to="/login">
+            <Link className="topbar-cta" to="/login">
               Sign in
             </Link>
           )}
@@ -154,48 +147,44 @@ export default function ShipperHome() {
       </header>
 
       <main className="shipper-main">
-        <section className="shipper-hero">
-          <p className="eyebrow">For shipping teams</p>
-          <h1>Verify serial numbers before shipping</h1>
+        <section className="home-hero">
+          <p className="home-kicker">Ivy Technology</p>
+          <h1>QAN Checker</h1>
           <p className="lede">
-            Select a Quality Alert Notice, paste up to {MAX_SERIALS} serials, and confirm which units
-            can ship — and which must go back to CM.
+            Verify up to {MAX_SERIALS} serials against a Quality Alert Notice before shipping.
           </p>
         </section>
 
         {!loggedIn ? (
           <section className="shipper-panel welcome-panel">
-            <h2>Ready to check units?</h2>
-            <p className="lede">
-              Sign in with the shipper account your administrator gave you. The home page is only for
-              serial checks — no admin tools here.
+            <h2>Sign in to verify units</h2>
+            <p className="lede welcome-lede">
+              Use the shipper account from your administrator. This page is for checks only.
             </p>
-            <div className="welcome-steps">
-              <div className="welcome-step">
+            <ol className="welcome-steps">
+              <li>
                 <span className="step-num">1</span>
-                <p>Sign in with your shipper access</p>
-              </div>
-              <div className="welcome-step">
+                <span>Sign in</span>
+              </li>
+              <li>
                 <span className="step-num">2</span>
-                <p>Choose the QAN you need to check</p>
-              </div>
-              <div className="welcome-step">
+                <span>Select a QAN</span>
+              </li>
+              <li>
                 <span className="step-num">3</span>
-                <p>Paste serials and see hold / clear results</p>
-              </div>
-            </div>
-            <div className="check-actions">
-              <Link className="primary-link-btn" to="/login">
-                Sign in to check
-              </Link>
-            </div>
+                <span>Paste serials &amp; check</span>
+              </li>
+            </ol>
+            <Link className="primary-link-btn" to="/login">
+              Sign in to check
+            </Link>
           </section>
         ) : (
           <>
             <section className="shipper-panel">
               <form className="check-form" onSubmit={handleSubmit}>
                 <div className="field">
-                  <label htmlFor="qanSelect">Select QAN</label>
+                  <label htmlFor="qanSelect">QAN</label>
                   <select
                     id="qanSelect"
                     value={qanId}
@@ -210,7 +199,7 @@ export default function ShipperHome() {
                       {qansLoading
                         ? 'Loading…'
                         : qans.length === 0
-                          ? 'No active QANs available'
+                          ? 'No active QANs'
                           : 'Choose a QAN…'}
                     </option>
                     <option value="all">All active QANs</option>
@@ -227,7 +216,7 @@ export default function ShipperHome() {
                   <label htmlFor="serials">
                     Serial numbers
                     <span className="count-hint">
-                      {parsedCount} / {MAX_SERIALS} · max {MAX_SERIAL_LENGTH} digits each
+                      {parsedCount}/{MAX_SERIALS} · max {MAX_SERIAL_LENGTH} digits
                     </span>
                   </label>
                   <textarea
@@ -236,16 +225,13 @@ export default function ShipperHome() {
                     rows={4}
                     autoFocus
                     spellCheck={false}
-                    placeholder={
-                      'Paste up to 11 digits per serial — spaces are added automatically\n12345678901 12345678902'
-                    }
+                    placeholder={'12345678901 12345678902'}
                     value={serialText}
                     onChange={(e) => setSerialText(formatWhileTyping(e.target.value))}
                     onBlur={() => setSerialText(formatWhileTyping(serialText))}
                   />
                   <p className="field-hint">
-                    Max {MAX_SERIAL_LENGTH} digits per serial (shorter is OK). A space is inserted
-                    every {MAX_SERIAL_LENGTH} digits.
+                    Up to {MAX_SERIAL_LENGTH} digits each. Spaces are added automatically.
                   </p>
 
                   {parsedSerials.length > 0 && (
@@ -258,7 +244,7 @@ export default function ShipperHome() {
                           }`}
                         >
                           <code>{serial}</code>
-                          <span className="serial-tile-meta">{serial.length} digits</span>
+                          <span className="serial-tile-meta">{serial.length} dig</span>
                           <button
                             type="button"
                             className="serial-tile-remove"
@@ -363,6 +349,8 @@ export default function ShipperHome() {
           </>
         )}
       </main>
+
+      <SiteFooter />
     </div>
   );
 }

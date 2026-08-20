@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api, clearAuth, getStoredUser } from '../api';
+import IvyLogo from '../components/IvyLogo';
+import SiteFooter from '../components/SiteFooter';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -147,13 +149,7 @@ export default function AdminDashboard() {
   return (
     <div className="page admin-page">
       <header className="topbar">
-        <div className="brand">
-          <span className="brand-mark" aria-hidden />
-          <div className="brand-text">
-            <span className="brand-name">QAN Checker</span>
-            <span className="brand-sub">Administration</span>
-          </div>
-        </div>
+        <IvyLogo to="/admin" size="md" />
         <div className="topbar-actions">
           <span className="user-chip">{user?.username}</span>
           <button type="button" className="ghost-btn" onClick={logout}>
@@ -425,6 +421,8 @@ export default function AdminDashboard() {
           </>
         )}
       </main>
+
+      <SiteFooter />
     </div>
   );
 }

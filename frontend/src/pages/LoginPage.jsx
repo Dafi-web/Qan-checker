@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { api, getStoredUser, isLoggedIn, setAuth } from '../api';
+import IvyLogo from '../components/IvyLogo';
+import SiteFooter from '../components/SiteFooter';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -32,22 +34,14 @@ export default function LoginPage() {
   return (
     <div className="page auth-page">
       <header className="topbar topbar-shipper">
-        <Link className="brand" to="/">
-          <span className="brand-mark" aria-hidden />
-          <div className="brand-text">
-            <span className="brand-name">QAN Checker</span>
-            <span className="brand-sub">Shipping verification</span>
-          </div>
-        </Link>
+        <IvyLogo to="/" size="md" />
       </header>
 
       <main className="auth-main">
         <form className="auth-card" onSubmit={handleSubmit}>
-          <p className="eyebrow">Sign in</p>
-          <h1>Welcome back</h1>
-          <p className="lede">
-            Shippers return to the home page to check serials. Administrators open the admin console.
-          </p>
+          <IvyLogo to={null} size="lg" />
+          <h1>Sign in</h1>
+          <p className="lede">Shippers check serials. Admins manage QANs and access.</p>
 
           <label htmlFor="username">Username</label>
           <input
@@ -55,7 +49,7 @@ export default function LoginPage() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             autoComplete="username"
-            placeholder="Your username"
+            placeholder="Username"
             required
           />
 
@@ -66,7 +60,7 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
-            placeholder="Your password"
+            placeholder="Password"
             required
           />
 
@@ -83,6 +77,8 @@ export default function LoginPage() {
           </p>
         </form>
       </main>
+
+      <SiteFooter />
     </div>
   );
 }
