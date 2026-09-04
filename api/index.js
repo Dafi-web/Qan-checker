@@ -6,7 +6,11 @@ try {
     path: path.join(__dirname, '../backend/.env'),
   });
 } catch (_) {
-  // ignore
+  // ignore — Vercel injects env vars; .env is not deployed
+}
+
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = 'qan-checker-dev-secret-change-in-production';
 }
 
 let app;

@@ -9,6 +9,10 @@ try {
   // dotenv optional on Vercel
 }
 
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = 'qan-checker-dev-secret-change-in-production';
+}
+
 let app;
 try {
   // frontend/api -> repo/backend/app.js

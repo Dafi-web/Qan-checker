@@ -1,3 +1,10 @@
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = 'qan-checker-dev-secret-change-in-production';
+}
+
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
