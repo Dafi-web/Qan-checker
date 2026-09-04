@@ -1,21 +1,23 @@
 :root {
-  --bg: #0f1714;
-  --bg-elevated: #18241f;
-  --bg-panel: rgba(24, 36, 31, 0.92);
-  --line: rgba(214, 232, 220, 0.14);
-  --text: #eef6f0;
-  --muted: #9bb3a6;
-  --accent: #3dd68c;
-  --accent-dim: rgba(61, 214, 140, 0.16);
-  --stop: #ff6b4a;
-  --stop-dim: rgba(255, 107, 74, 0.16);
-  --go: #3dd68c;
-  --go-dim: rgba(61, 214, 140, 0.16);
+  --bg: #0b1410;
+  --bg-elevated: #14201a;
+  --bg-panel: rgba(20, 36, 28, 0.94);
+  --line: rgba(200, 230, 210, 0.14);
+  --text: #f2f8f4;
+  --muted: #8fad9c;
+  --accent: #008444;
+  --accent-bright: #00a356;
+  --accent-dim: rgba(0, 132, 68, 0.22);
+  --stop: #e4573d;
+  --stop-dim: rgba(228, 87, 61, 0.16);
+  --go: #00a356;
+  --go-dim: rgba(0, 163, 86, 0.16);
   --danger: #ff7a66;
-  --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
-  --radius: 14px;
+  --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  --radius: 16px;
   --font: 'Outfit', sans-serif;
   --mono: 'IBM Plex Mono', monospace;
+  --logo-bg: #ececec;
 }
 
 * {
@@ -33,9 +35,9 @@ body {
   font-family: var(--font);
   color: var(--text);
   background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(61, 214, 140, 0.12), transparent 55%),
-    radial-gradient(900px 500px at 100% 0%, rgba(255, 107, 74, 0.1), transparent 50%),
-    linear-gradient(160deg, #0c1311 0%, #13201a 45%, #0f1714 100%);
+    radial-gradient(1000px 520px at 8% -8%, rgba(0, 132, 68, 0.18), transparent 55%),
+    radial-gradient(800px 420px at 100% 0%, rgba(0, 163, 86, 0.08), transparent 50%),
+    linear-gradient(165deg, #08110d 0%, #0f1c16 42%, #0b1410 100%);
   background-attachment: fixed;
 }
 
@@ -60,56 +62,66 @@ select {
 .ivy-logo {
   display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.85rem;
   color: inherit;
   text-decoration: none;
 }
 
 .ivy-mark {
   flex-shrink: 0;
-  border-radius: 12px;
-  box-shadow: 0 0 0 3px var(--accent-dim);
+  display: block;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--logo-bg);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.08),
+    0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+.ivy-mark-lg {
+  box-shadow:
+    0 0 0 3px rgba(0, 132, 68, 0.35),
+    0 12px 32px rgba(0, 0, 0, 0.35);
 }
 
 .ivy-wordmark {
   display: flex;
   flex-direction: column;
-  gap: 0.05rem;
+  gap: 0.1rem;
   line-height: 1.15;
 }
 
-.ivy-name {
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  font-size: 1.05rem;
-}
-
-.ivy-wordmark-lg .ivy-name {
-  font-size: 1.25rem;
-}
-
-.ivy-wordmark-sm .ivy-name {
-  font-size: 0.95rem;
-}
-
 .ivy-product {
-  font-size: 0.72rem;
-  color: var(--muted);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  font-weight: 500;
+  font-size: 0.95rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  color: var(--text);
+}
+
+.ivy-wordmark-sm .ivy-product {
+  font-size: 0.82rem;
+}
+
+.ivy-wordmark-lg .ivy-product {
+  font-size: 1.15rem;
 }
 
 .topbar-cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.55rem 1rem;
-  border-radius: 10px;
+  padding: 0.55rem 1.05rem;
+  border-radius: 999px;
   background: var(--accent);
-  color: #062015;
+  color: #fff;
   font-weight: 650;
   font-size: 0.92rem;
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.topbar-cta:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
 }
 
 .home-hero {
@@ -120,15 +132,15 @@ select {
 
 .home-kicker {
   margin: 0;
-  font-size: clamp(1.35rem, 3.5vw, 1.85rem);
+  font-size: clamp(1.15rem, 3vw, 1.45rem);
   font-weight: 700;
-  letter-spacing: -0.03em;
-  color: var(--accent);
+  letter-spacing: -0.02em;
+  color: var(--accent-bright);
 }
 
 .home-hero h1 {
-  margin: 0.2rem 0 0.75rem;
-  font-size: clamp(2.2rem, 6vw, 3.4rem);
+  margin: 0.25rem 0 0.75rem;
+  font-size: clamp(2.2rem, 6vw, 3.35rem);
   line-height: 1.05;
   letter-spacing: -0.04em;
 }
@@ -159,8 +171,8 @@ select {
 .site-footer {
   margin-top: auto;
   border-top: 1px solid var(--line);
-  padding: 1.25rem 1.5rem 1.75rem;
-  background: rgba(8, 14, 12, 0.45);
+  padding: 1.35rem clamp(1rem, 3vw, 1.5rem) 1.85rem;
+  background: rgba(8, 16, 12, 0.55);
 }
 
 .site-footer-inner {
@@ -169,8 +181,19 @@ select {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.85rem;
+  gap: 1rem 1.25rem;
+}
+
+.site-footer-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.site-footer-brand {
+  margin: 0;
+  font-weight: 650;
+  color: var(--text);
 }
 
 .site-footer-copy {
@@ -182,7 +205,7 @@ select {
 }
 
 .auth-card .ivy-logo {
-  margin-bottom: 1rem;
+  margin-bottom: 1.15rem;
 }
 
 .topbar {
@@ -308,11 +331,11 @@ a.primary-link-btn,
   align-items: center;
   justify-content: center;
   border: 0;
-  border-radius: 10px;
+  border-radius: 999px;
   background: var(--accent);
-  color: #062015;
+  color: #fff;
   font-weight: 650;
-  padding: 0.85rem 1.2rem;
+  padding: 0.85rem 1.25rem;
   cursor: pointer;
   text-decoration: none;
 }
@@ -658,7 +681,7 @@ button {
   border: 0;
   border-radius: 10px;
   background: var(--accent);
-  color: #062015;
+  color: #fff;
   font-weight: 650;
   padding: 0.85rem 1.2rem;
   cursor: pointer;
@@ -924,10 +947,6 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 
-  .ivy-product {
-    display: none;
-  }
-
   .site-footer-inner {
     flex-direction: column;
     align-items: flex-start;
@@ -947,6 +966,10 @@ button:disabled {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .ivy-product {
+    font-size: 0.85rem;
   }
 }
 

@@ -39,7 +39,7 @@ export default function LoginPage() {
 
       <main className="auth-main">
         <form className="auth-card" onSubmit={handleSubmit}>
-          <IvyLogo to={null} size="lg" />
+          <IvyLogo to={null} size="lg" showProduct={false} />
           <h1>Sign in</h1>
           <p className="lede">Shippers check serials. Admins manage QANs and access.</p>
 
