@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   MAX_SERIAL_LENGTH,
   MAX_SERIALS,
@@ -74,6 +74,17 @@ export default function QanCheckPanel({ qans = [], qansLoading = false }) {
     if (!qanId || qanId === 'all') return null;
     return qans.find((q) => String(q.id) === String(qanId)) || null;
   }, [qans, qanId]);
+
+  useEffect(() => {
+    if (!qanId) return;
+    if (qanId === 'all') {
+      if (query) setQanId('');
+      return;
+    }
+    if (!filteredQans.some((q) => String(q.id) === String(qanId))) {
+      setQanId('');
+    }
+  }, [filteredQans, qanId, query]);
 
   function selectQan(id) {
     setQanId(String(id));
@@ -161,7 +172,6 @@ export default function QanCheckPanel({ qans = [], qansLoading = false }) {
               }}
               placeholder="Type a number, e.g. 001 or 2026…"
               autoComplete="off"
-              autoFocus
             />
             {query && (
               <button type="button" className="ghost-btn" onClick={clearQanSearch}>
@@ -176,7 +186,7 @@ export default function QanCheckPanel({ qans = [], qansLoading = false }) {
 
         <div className="field">
           <div className="qan-picker-head">
-            <label>Select QAN</label>
+            <label htmlFor="qanSelect">Which QAN do you want to check?</label>
             <span className="count-hint">
               {qansLoading
                 ? 'Loading…'
@@ -186,25 +196,49 @@ export default function QanCheckPanel({ qans = [], qansLoading = false }) {
             </span>
           </div>
 
-          {!qansLoading && qans.length > 0 && !query && (
-            <button
-              type="button"
-              className={`qan-pick-card qan-pick-all ${qanId === 'all' ? 'qan-pick-selected' : ''}`}
-              onClick={() => selectQan('all')}
-            >
-              <span className="qan-pick-number">All active QANs</span>
-              <span className="qan-pick-title">Check against every active QAN</span>
-            </button>
-          )}
+          <select
+            id="qanSelect"
+            value={qanId}
+            onChange={(e) => selectQan(e.target.value)}
+            disabled={qansLoading || (query ? filteredQans.length === 0 : qans.length === 0)}
+            required
+          >
+            <option value="">
+              {qansLoading
+                ? 'Loading…'
+                : query
+                  ? filteredQans.length === 0
+                    ? 'No QANs match your search'
+                    : 'Please select a QAN'
+                  : qans.length === 0
+                    ? 'No active QANs'
+                    : 'Please select which QAN you want to check'}
+            </option>
+            {!query && qans.length > 0 && <option value="all">All active QANs</option>}
+            {filteredQans.map((q) => (
+              <option key={q.id} value={q.id}>
+                {q.qanNumber}
+                {q.title ? ` — ${q.title}` : ''}
+              </option>
+            ))}
+          </select>
 
-          {qansLoading ? (
-            <p className="muted">Loading QANs…</p>
-          ) : qans.length === 0 ? (
-            <p className="muted">No active QANs available.</p>
-          ) : filteredQans.length === 0 ? (
-            <p className="muted">No QAN matches “{query}”. Try fewer digits or clear the search.</p>
-          ) : (
+          {!qansLoading && filteredQans.length > 0 && (
             <ul className="qan-pick-list" role="listbox" aria-label="Matching QANs">
+              {!query && (
+                <li>
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={qanId === 'all'}
+                    className={`qan-pick-card qan-pick-all ${qanId === 'all' ? 'qan-pick-selected' : ''}`}
+                    onClick={() => selectQan('all')}
+                  >
+                    <span className="qan-pick-number">All active QANs</span>
+                    <span className="qan-pick-title">Check against every active QAN</span>
+                  </button>
+                </li>
+              )}
               {filteredQans.map((q) => {
                 const selected = String(qanId) === String(q.id);
                 return (
@@ -224,6 +258,14 @@ export default function QanCheckPanel({ qans = [], qansLoading = false }) {
               })}
             </ul>
           )}
+
+          {qansLoading ? (
+            <p className="muted">Loading QANs…</p>
+          ) : qans.length === 0 ? (
+            <p className="muted">No active QANs available.</p>
+          ) : filteredQans.length === 0 ? (
+            <p className="muted">No QAN matches “{query}”. Try fewer digits or clear the search.</p>
+          ) : null}
 
           {selectedQan && (
             <p className="selected-qan-chip">
