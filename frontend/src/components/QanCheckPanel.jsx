@@ -160,7 +160,7 @@ export default function QanCheckPanel({ qans = [], qansLoading = false }) {
     <>
       <form className="check-form" onSubmit={handleSubmit}>
         <div className="field">
-          <label htmlFor="qanSearch">Find QAN</label>
+          <label htmlFor="qanSearch">Search QAN</label>
           <div className="qan-search-row">
             <input
               id="qanSearch"
@@ -170,8 +170,9 @@ export default function QanCheckPanel({ qans = [], qansLoading = false }) {
                 setQanQuery(e.target.value);
                 setBulk(null);
               }}
-              placeholder="Type a number, e.g. 001 or 2026…"
+              placeholder="Type number only, e.g. 001…"
               autoComplete="off"
+              inputMode="search"
             />
             {query && (
               <button type="button" className="ghost-btn" onClick={clearQanSearch}>
@@ -180,13 +181,13 @@ export default function QanCheckPanel({ qans = [], qansLoading = false }) {
             )}
           </div>
           <p className="field-hint">
-            Results update as you type. Numbers alone work — try part of the QAN number.
+            Type to filter. Number-only search works (example: 001 finds QAN-2026-001).
           </p>
         </div>
 
         <div className="field">
           <div className="qan-picker-head">
-            <label htmlFor="qanSelect">Which QAN do you want to check?</label>
+            <label htmlFor="qanSelect">QAN dropdown</label>
             <span className="count-hint">
               {qansLoading
                 ? 'Loading…'

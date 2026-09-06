@@ -181,8 +181,8 @@ export default function AdminDashboard() {
         <section className="admin-intro">
           <p className="eyebrow">Administrator</p>
           <h1>Admin page</h1>
-          <p className="lede">
-            Check serials against QANs, manage Quality Alert Notices, and grant shipper access.
+          <p className="lede admin-lede">
+            Check serials, manage QANs, and grant shipper access.
           </p>
           <div className="admin-stats">
             <div className="stat-card">
@@ -200,37 +200,40 @@ export default function AdminDashboard() {
           </div>
         </section>
 
-        <div className="tab-row">
+        <nav className="tab-row" aria-label="Admin sections">
           <button
             type="button"
             className={tab === 'check' ? 'filter-active' : 'ghost-btn'}
             onClick={() => setTab('check')}
           >
-            Check QAN
+            <span className="tab-label-full">Check QAN</span>
+            <span className="tab-label-short">Check</span>
           </button>
           <button
             type="button"
             className={tab === 'qans' ? 'filter-active' : 'ghost-btn'}
             onClick={() => setTab('qans')}
           >
-            Manage QANs
+            <span className="tab-label-full">Manage QANs</span>
+            <span className="tab-label-short">QANs</span>
           </button>
           <button
             type="button"
             className={tab === 'access' ? 'filter-active' : 'ghost-btn'}
             onClick={() => setTab('access')}
           >
-            User access
+            <span className="tab-label-full">User access</span>
+            <span className="tab-label-short">Users</span>
           </button>
-        </div>
+        </nav>
 
         {error && <p className="form-error">{error}</p>}
 
         {tab === 'check' && (
-          <section className="panel">
+          <section className="panel check-panel">
             <h2>Check QAN</h2>
             <p className="panel-note">
-              Type part of the QAN number, tap a result, then paste serials to check.
+              Search or use the dropdown, select a QAN, then paste serials.
             </p>
             {loading && !statsReady ? (
               <p className="muted">Loading…</p>

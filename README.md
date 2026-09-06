@@ -7,7 +7,7 @@ Professional MERN app for Quality Alert Notice (QAN) serial checks.
 | Area | Who | URL |
 |------|-----|-----|
 | **Home (shipper)** | Shippers | `/` — select a QAN, paste up to 100 serials, verify before shipping |
-| **Admin console** | Admins | `/admin` — manage QANs, grant/revoke user access |
+| **Admin page** | Admins | `/admin` — check serials, manage QANs, grant/revoke user access |
 
 Home page is shipper-only. Admin tools never appear there.
 
@@ -48,5 +48,5 @@ npm run seed
 
 ## Flow
 
-1. Admin signs in → **Admin console** → create QANs and **Grant access** to shippers.
+1. Admin signs in → **Admin page** → check serials, create QANs, and **Grant access** to shippers.
 2. Shipper signs in → **Home** → pick QAN → paste serials → check.
