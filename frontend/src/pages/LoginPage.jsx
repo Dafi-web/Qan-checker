@@ -38,10 +38,18 @@ export default function LoginPage() {
       </header>
 
       <main className="auth-main">
-        <form className="auth-card" onSubmit={handleSubmit}>
+        <div className="auth-layout">
+          <aside className="auth-aside">
+            <p className="eyebrow">Secure access</p>
+            <h1>Sign in to check serials.</h1>
+            <p>
+              Select which QAN you want to check, paste the serials, and review the result.
+            </p>
+          </aside>
+          <form className="auth-card" onSubmit={handleSubmit}>
           <IvyLogo to={null} size="lg" showProduct={false} />
           <h1>Sign in</h1>
-          <p className="lede">Shippers check serials. Admins manage QANs and access.</p>
+          <p className="lede">Use the account issued by your administrator.</p>
 
           <label htmlFor="username">Username</label>
           <input
@@ -75,7 +83,8 @@ export default function LoginPage() {
               ← Back to home
             </Link>
           </p>
-        </form>
+          </form>
+        </div>
       </main>
 
       <SiteFooter />

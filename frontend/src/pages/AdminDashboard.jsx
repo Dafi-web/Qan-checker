@@ -160,10 +160,10 @@ export default function AdminDashboard() {
 
       <main className="admin-main">
         <section className="admin-intro">
-          <p className="eyebrow">Control center</p>
-          <h1>Admin console</h1>
+          <p className="eyebrow">Administrator</p>
+          <h1>Admin page</h1>
           <p className="lede">
-            Create and manage QANs, grant shipper access, and control who can verify serials.
+            Manage Quality Alert Notices, grant shipper access, and keep serial checks aligned.
           </p>
           <div className="admin-stats">
             <div className="stat-card">
@@ -284,7 +284,7 @@ export default function AdminDashboard() {
                       </div>
                       <div className="qan-actions">
                         <Link className="text-link" to={`/admin/qans/${qan._id}`}>
-                          Manage serials
+                          Edit / serials
                         </Link>
                         <button type="button" className="ghost-btn" onClick={() => toggleActive(qan)}>
                           {qan.active ? 'Deactivate' : 'Activate'}

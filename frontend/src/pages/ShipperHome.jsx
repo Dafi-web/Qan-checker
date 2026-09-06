@@ -85,7 +85,7 @@ export default function ShipperHome() {
     }
 
     if (serials.length > MAX_SERIALS) {
-      setError(`Maximum ${MAX_SERIALS} serials per check (you entered ${serials.length})`);
+      setError('Please check fewer serials at a time.');
       return;
     }
 
@@ -149,18 +149,30 @@ export default function ShipperHome() {
       <main className="shipper-main">
         <section className="home-hero">
           <p className="home-kicker">Ivy Technology</p>
-          <h1>QAN Checker</h1>
-          <p className="lede">
-            Verify up to {MAX_SERIALS} serials against a Quality Alert Notice before shipping.
-          </p>
+          <h1>Which QAN do you want to check?</h1>
+          <p className="lede">Please select a Quality Alert Notice, then paste serials to check.</p>
         </section>
 
         {!loggedIn ? (
           <section className="shipper-panel welcome-panel">
-            <h2>Sign in to verify units</h2>
+            <h2>How it works</h2>
             <p className="lede welcome-lede">
-              Use the shipper account from your administrator. This page is for checks only.
+              Sign in with the shipper account from your administrator, select the QAN, and check.
             </p>
+            <div className="trust-row">
+              <div className="trust-item">
+                <strong>Select</strong>
+                <span>Choose which QAN you want to check</span>
+              </div>
+              <div className="trust-item">
+                <strong>Paste</strong>
+                <span>Enter the serial numbers</span>
+              </div>
+              <div className="trust-item">
+                <strong>Check</strong>
+                <span>Hold and send back, or good to ship</span>
+              </div>
+            </div>
             <ol className="welcome-steps">
               <li>
                 <span className="step-num">1</span>
@@ -168,11 +180,11 @@ export default function ShipperHome() {
               </li>
               <li>
                 <span className="step-num">2</span>
-                <span>Select a QAN</span>
+                <span>Please select which QAN you want to check</span>
               </li>
               <li>
                 <span className="step-num">3</span>
-                <span>Paste serials &amp; check</span>
+                <span>Paste serials and check</span>
               </li>
             </ol>
             <Link className="primary-link-btn" to="/login">
@@ -184,7 +196,7 @@ export default function ShipperHome() {
             <section className="shipper-panel">
               <form className="check-form" onSubmit={handleSubmit}>
                 <div className="field">
-                  <label htmlFor="qanSelect">QAN</label>
+                  <label htmlFor="qanSelect">Which QAN do you want to check?</label>
                   <select
                     id="qanSelect"
                     value={qanId}
@@ -200,7 +212,7 @@ export default function ShipperHome() {
                         ? 'Loading…'
                         : qans.length === 0
                           ? 'No active QANs'
-                          : 'Choose a QAN…'}
+                          : 'Please select which QAN you want to check'}
                     </option>
                     <option value="all">All active QANs</option>
                     {qans.map((q) => (
@@ -215,9 +227,7 @@ export default function ShipperHome() {
                 <div className="field">
                   <label htmlFor="serials">
                     Serial numbers
-                    <span className="count-hint">
-                      {parsedCount}/{MAX_SERIALS} · max {MAX_SERIAL_LENGTH} digits
-                    </span>
+                    {parsedCount > 0 && <span className="count-hint">{parsedCount} to check</span>}
                   </label>
                   <textarea
                     id="serials"
@@ -225,14 +235,12 @@ export default function ShipperHome() {
                     rows={4}
                     autoFocus
                     spellCheck={false}
-                    placeholder={'12345678901 12345678902'}
+                    placeholder={'Paste serials to check'}
                     value={serialText}
                     onChange={(e) => setSerialText(formatWhileTyping(e.target.value))}
                     onBlur={() => setSerialText(formatWhileTyping(serialText))}
                   />
-                  <p className="field-hint">
-                    Up to {MAX_SERIAL_LENGTH} digits each. Spaces are added automatically.
-                  </p>
+                  <p className="field-hint">Paste serials, then check.</p>
 
                   {parsedSerials.length > 0 && (
                     <div className="serial-board" aria-label="Parsed serial numbers">

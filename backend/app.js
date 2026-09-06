@@ -15,7 +15,12 @@ const userRoutes = require('./routes/users');
 
 const app = express();
 
-app.use(cors());
+const frontendUrl = (process.env.FRONTEND_URL || '').replace(/\/$/, '');
+app.use(
+  cors({
+    origin: frontendUrl ? [frontendUrl, 'http://localhost:5173'] : true,
+  })
+);
 app.use(express.json({ limit: '2mb' }));
 
 app.use(async (_req, _res, next) => {
