@@ -1,18 +1,21 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api, clearAuth, getStoredUser } from '../api';
 import IvyLogo from '../components/IvyLogo';
+import QanCheckPanel from '../components/QanCheckPanel';
 import SiteFooter from '../components/SiteFooter';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const user = getStoredUser();
-  const [tab, setTab] = useState('qans');
+  const [tab, setTab] = useState('check');
   const [qans, setQans] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statsReady, setStatsReady] = useState(false);
   const [error, setError] = useState('');
+  const [qanSearch, setQanSearch] = useState('');
+  const [appliedQanSearch, setAppliedQanSearch] = useState('');
   const [form, setForm] = useState({
     qanNumber: '',
     title: '',
@@ -25,6 +28,29 @@ export default function AdminDashboard() {
     role: 'shipper',
   });
   const [saving, setSaving] = useState(false);
+
+  const activeCheckQans = useMemo(
+    () =>
+      qans
+        .filter((q) => q.active)
+        .map((q) => ({
+          id: q._id,
+          qanNumber: q.qanNumber,
+          title: q.title,
+        })),
+    [qans]
+  );
+
+  const filteredManageQans = useMemo(() => {
+    const q = appliedQanSearch.trim().toUpperCase();
+    if (!q) return qans;
+    return qans.filter((qan) => {
+      const number = String(qan.qanNumber || '').toUpperCase();
+      const title = String(qan.title || '').toUpperCase();
+      const description = String(qan.description || '').toUpperCase();
+      return number.includes(q) || title.includes(q) || description.includes(q);
+    });
+  }, [qans, appliedQanSearch]);
 
   async function loadQans() {
     setLoading(true);
@@ -65,13 +91,18 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!statsReady) return;
-    if (tab === 'qans') loadQans();
-    else loadUsers();
+    if (tab === 'access') loadUsers();
+    else loadQans();
   }, [tab]);
 
   function logout() {
     clearAuth();
     navigate('/login');
+  }
+
+  function handleSearchManageQans(e) {
+    e.preventDefault();
+    setAppliedQanSearch(qanSearch);
   }
 
   async function handleCreate(e) {
@@ -163,7 +194,7 @@ export default function AdminDashboard() {
           <p className="eyebrow">Administrator</p>
           <h1>Admin page</h1>
           <p className="lede">
-            Manage Quality Alert Notices, grant shipper access, and keep serial checks aligned.
+            Check serials against QANs, manage Quality Alert Notices, and grant shipper access.
           </p>
           <div className="admin-stats">
             <div className="stat-card">
@@ -184,6 +215,13 @@ export default function AdminDashboard() {
         <div className="tab-row">
           <button
             type="button"
+            className={tab === 'check' ? 'filter-active' : 'ghost-btn'}
+            onClick={() => setTab('check')}
+          >
+            Check QAN
+          </button>
+          <button
+            type="button"
             className={tab === 'qans' ? 'filter-active' : 'ghost-btn'}
             onClick={() => setTab('qans')}
           >
@@ -199,6 +237,20 @@ export default function AdminDashboard() {
         </div>
 
         {error && <p className="form-error">{error}</p>}
+
+        {tab === 'check' && (
+          <section className="panel">
+            <h2>Check QAN</h2>
+            <p className="panel-note">
+              Search for a QAN, select it, then paste serial numbers to see if units are on hold.
+            </p>
+            {loading && !statsReady ? (
+              <p className="muted">Loading…</p>
+            ) : (
+              <QanCheckPanel qans={activeCheckQans} qansLoading={loading} />
+            )}
+          </section>
+        )}
 
         {tab === 'qans' && (
           <>
@@ -266,13 +318,46 @@ export default function AdminDashboard() {
                 </button>
               </div>
 
+              <form className="qan-search-row manage-search" onSubmit={handleSearchManageQans}>
+                <input
+                  type="search"
+                  value={qanSearch}
+                  onChange={(e) => setQanSearch(e.target.value)}
+                  placeholder="Search QAN number or title…"
+                  aria-label="Search QANs"
+                />
+                <button type="submit" className="ghost-btn">
+                  Search
+                </button>
+                {(qanSearch || appliedQanSearch) && (
+                  <button
+                    type="button"
+                    className="ghost-btn"
+                    onClick={() => {
+                      setQanSearch('');
+                      setAppliedQanSearch('');
+                    }}
+                  >
+                    Clear
+                  </button>
+                )}
+              </form>
+              {appliedQanSearch && (
+                <p className="field-hint">
+                  Showing {filteredManageQans.length} of {qans.length} QAN
+                  {qans.length === 1 ? '' : 's'} matching “{appliedQanSearch}”.
+                </p>
+              )}
+
               {loading ? (
                 <p className="muted">Loading…</p>
               ) : qans.length === 0 ? (
                 <p className="muted">No QANs yet. Create one above.</p>
+              ) : filteredManageQans.length === 0 ? (
+                <p className="muted">No QANs match your search.</p>
               ) : (
                 <ul className="qan-list">
-                  {qans.map((qan) => (
+                  {filteredManageQans.map((qan) => (
                     <li key={qan._id} className="qan-item">
                       <div>
                         <p className="qan-number">

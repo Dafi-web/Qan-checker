@@ -573,6 +573,22 @@ select {
 }
 
 .result-filters,
+.qan-search-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.qan-search-row input[type='search'] {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.manage-search {
+  margin: 0.35rem 0 0.85rem;
+}
+
 .tab-row {
   display: flex;
   flex-wrap: wrap;
