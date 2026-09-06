@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api, clearAuth, getStoredUser } from '../api';
 import IvyLogo from '../components/IvyLogo';
-import QanCheckPanel from '../components/QanCheckPanel';
+import QanCheckPanel, { qanMatchesQuery } from '../components/QanCheckPanel';
 import SiteFooter from '../components/SiteFooter';
 
 export default function AdminDashboard() {
@@ -15,7 +15,6 @@ export default function AdminDashboard() {
   const [statsReady, setStatsReady] = useState(false);
   const [error, setError] = useState('');
   const [qanSearch, setQanSearch] = useState('');
-  const [appliedQanSearch, setAppliedQanSearch] = useState('');
   const [form, setForm] = useState({
     qanNumber: '',
     title: '',
@@ -42,15 +41,9 @@ export default function AdminDashboard() {
   );
 
   const filteredManageQans = useMemo(() => {
-    const q = appliedQanSearch.trim().toUpperCase();
-    if (!q) return qans;
-    return qans.filter((qan) => {
-      const number = String(qan.qanNumber || '').toUpperCase();
-      const title = String(qan.title || '').toUpperCase();
-      const description = String(qan.description || '').toUpperCase();
-      return number.includes(q) || title.includes(q) || description.includes(q);
-    });
-  }, [qans, appliedQanSearch]);
+    if (!qanSearch.trim()) return qans;
+    return qans.filter((qan) => qanMatchesQuery(qan, qanSearch));
+  }, [qans, qanSearch]);
 
   async function loadQans() {
     setLoading(true);
@@ -98,11 +91,6 @@ export default function AdminDashboard() {
   function logout() {
     clearAuth();
     navigate('/login');
-  }
-
-  function handleSearchManageQans(e) {
-    e.preventDefault();
-    setAppliedQanSearch(qanSearch);
   }
 
   async function handleCreate(e) {
@@ -242,7 +230,7 @@ export default function AdminDashboard() {
           <section className="panel">
             <h2>Check QAN</h2>
             <p className="panel-note">
-              Search for a QAN, select it, then paste serial numbers to see if units are on hold.
+              Type part of the QAN number, tap a result, then paste serials to check.
             </p>
             {loading && !statsReady ? (
               <p className="muted">Loading…</p>
@@ -318,34 +306,24 @@ export default function AdminDashboard() {
                 </button>
               </div>
 
-              <form className="qan-search-row manage-search" onSubmit={handleSearchManageQans}>
+              <div className="qan-search-row manage-search">
                 <input
                   type="search"
                   value={qanSearch}
                   onChange={(e) => setQanSearch(e.target.value)}
-                  placeholder="Search QAN number or title…"
+                  placeholder="Type a number, e.g. 001 or 2026…"
                   aria-label="Search QANs"
                 />
-                <button type="submit" className="ghost-btn">
-                  Search
-                </button>
-                {(qanSearch || appliedQanSearch) && (
-                  <button
-                    type="button"
-                    className="ghost-btn"
-                    onClick={() => {
-                      setQanSearch('');
-                      setAppliedQanSearch('');
-                    }}
-                  >
+                {qanSearch && (
+                  <button type="button" className="ghost-btn" onClick={() => setQanSearch('')}>
                     Clear
                   </button>
                 )}
-              </form>
-              {appliedQanSearch && (
+              </div>
+              {qanSearch.trim() && (
                 <p className="field-hint">
                   Showing {filteredManageQans.length} of {qans.length} QAN
-                  {qans.length === 1 ? '' : 's'} matching “{appliedQanSearch}”.
+                  {qans.length === 1 ? '' : 's'} matching “{qanSearch.trim()}”.
                 </p>
               )}
 

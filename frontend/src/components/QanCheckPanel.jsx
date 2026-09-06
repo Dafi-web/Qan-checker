@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   MAX_SERIAL_LENGTH,
   MAX_SERIALS,
@@ -7,13 +7,53 @@ import {
 } from '../serials';
 import { api } from '../api';
 
+function digitsOnly(value) {
+  return String(value || '').replace(/\D/g, '');
+}
+
+function normalizeText(value) {
+  return String(value || '')
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, '');
+}
+
+/** Match QAN number/title against typed text — number-only queries match digits in the QAN. */
+export function qanMatchesQuery(qan, query) {
+  const raw = String(query || '').trim();
+  if (!raw) return true;
+
+  const number = String(qan.qanNumber || '');
+  const title = String(qan.title || '');
+  const description = String(qan.description || '');
+  const upper = raw.toUpperCase();
+  const compactQuery = normalizeText(raw);
+  const queryDigits = digitsOnly(raw);
+
+  if (number.toUpperCase().includes(upper) || title.toUpperCase().includes(upper)) {
+    return true;
+  }
+
+  if (description.toUpperCase().includes(upper)) return true;
+
+  const compactHaystack = normalizeText(`${number} ${title} ${description}`);
+  if (compactQuery && compactHaystack.includes(compactQuery)) return true;
+
+  // Typing "26" or "001" should find QAN-2026-001
+  if (queryDigits) {
+    const numberDigits = digitsOnly(number);
+    if (numberDigits.includes(queryDigits)) return true;
+  }
+
+  return false;
+}
+
 /**
  * Shared QAN search + serial check panel for shippers and admins.
  * qans: [{ id, qanNumber, title }]
  */
 export default function QanCheckPanel({ qans = [], qansLoading = false }) {
   const [qanQuery, setQanQuery] = useState('');
-  const [appliedQuery, setAppliedQuery] = useState('');
   const [qanId, setQanId] = useState('');
   const [serialText, setSerialText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,36 +63,26 @@ export default function QanCheckPanel({ qans = [], qansLoading = false }) {
 
   const { serials: parsedSerials } = useMemo(() => parseSerials(serialText), [serialText]);
   const parsedCount = parsedSerials.length;
+  const query = qanQuery.trim();
 
   const filteredQans = useMemo(() => {
-    const q = appliedQuery.trim().toUpperCase();
-    if (!q) return qans;
-    return qans.filter((item) => {
-      const number = String(item.qanNumber || '').toUpperCase();
-      const title = String(item.title || '').toUpperCase();
-      return number.includes(q) || title.includes(q);
-    });
-  }, [qans, appliedQuery]);
+    if (!query) return qans;
+    return qans.filter((item) => qanMatchesQuery(item, query));
+  }, [qans, query]);
 
-  useEffect(() => {
-    if (qanId === 'all') return;
-    if (qanId && filteredQans.some((q) => String(q.id) === String(qanId))) return;
-    if (filteredQans.length === 1) {
-      setQanId(String(filteredQans[0].id));
-      return;
-    }
-    if (qanId) setQanId('');
-  }, [filteredQans, qanId]);
+  const selectedQan = useMemo(() => {
+    if (!qanId || qanId === 'all') return null;
+    return qans.find((q) => String(q.id) === String(qanId)) || null;
+  }, [qans, qanId]);
 
-  function handleSearchQan(e) {
-    e.preventDefault();
-    setAppliedQuery(qanQuery);
+  function selectQan(id) {
+    setQanId(String(id));
     setBulk(null);
+    setError('');
   }
 
   function clearQanSearch() {
     setQanQuery('');
-    setAppliedQuery('');
     setBulk(null);
   }
 
@@ -119,68 +149,93 @@ export default function QanCheckPanel({ qans = [], qansLoading = false }) {
     <>
       <form className="check-form" onSubmit={handleSubmit}>
         <div className="field">
-          <label htmlFor="qanSearch">Search QAN</label>
+          <label htmlFor="qanSearch">Find QAN</label>
           <div className="qan-search-row">
             <input
               id="qanSearch"
               type="search"
               value={qanQuery}
-              onChange={(e) => setQanQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleSearchQan(e);
-                }
+              onChange={(e) => {
+                setQanQuery(e.target.value);
+                setBulk(null);
               }}
-              placeholder="Type QAN number or title…"
+              placeholder="Type a number, e.g. 001 or 2026…"
               autoComplete="off"
+              autoFocus
             />
-            <button type="button" className="ghost-btn" onClick={handleSearchQan}>
-              Search
-            </button>
-            {(qanQuery || appliedQuery) && (
+            {query && (
               <button type="button" className="ghost-btn" onClick={clearQanSearch}>
                 Clear
               </button>
             )}
           </div>
-          {appliedQuery && (
-            <p className="field-hint">
-              Showing {filteredQans.length} of {qans.length} QAN
-              {qans.length === 1 ? '' : 's'} matching “{appliedQuery}”.
-            </p>
-          )}
+          <p className="field-hint">
+            Results update as you type. Numbers alone work — try part of the QAN number.
+          </p>
         </div>
 
         <div className="field">
-          <label htmlFor="qanSelect">Which QAN do you want to check?</label>
-          <select
-            id="qanSelect"
-            value={qanId}
-            onChange={(e) => {
-              setQanId(e.target.value);
-              setBulk(null);
-            }}
-            disabled={qansLoading || filteredQans.length === 0}
-            required
-          >
-            <option value="">
+          <div className="qan-picker-head">
+            <label>Select QAN</label>
+            <span className="count-hint">
               {qansLoading
                 ? 'Loading…'
-                : filteredQans.length === 0
-                  ? appliedQuery
-                    ? 'No QANs match your search'
-                    : 'No active QANs'
-                  : 'Please select which QAN you want to check'}
-            </option>
-            {!appliedQuery && qans.length > 0 && <option value="all">All active QANs</option>}
-            {filteredQans.map((q) => (
-              <option key={q.id} value={q.id}>
-                {q.qanNumber}
-                {q.title ? ` — ${q.title}` : ''}
-              </option>
-            ))}
-          </select>
+                : query
+                  ? `${filteredQans.length} match${filteredQans.length === 1 ? '' : 'es'}`
+                  : `${qans.length} active`}
+            </span>
+          </div>
+
+          {!qansLoading && qans.length > 0 && !query && (
+            <button
+              type="button"
+              className={`qan-pick-card qan-pick-all ${qanId === 'all' ? 'qan-pick-selected' : ''}`}
+              onClick={() => selectQan('all')}
+            >
+              <span className="qan-pick-number">All active QANs</span>
+              <span className="qan-pick-title">Check against every active QAN</span>
+            </button>
+          )}
+
+          {qansLoading ? (
+            <p className="muted">Loading QANs…</p>
+          ) : qans.length === 0 ? (
+            <p className="muted">No active QANs available.</p>
+          ) : filteredQans.length === 0 ? (
+            <p className="muted">No QAN matches “{query}”. Try fewer digits or clear the search.</p>
+          ) : (
+            <ul className="qan-pick-list" role="listbox" aria-label="Matching QANs">
+              {filteredQans.map((q) => {
+                const selected = String(qanId) === String(q.id);
+                return (
+                  <li key={q.id}>
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={selected}
+                      className={`qan-pick-card ${selected ? 'qan-pick-selected' : ''}`}
+                      onClick={() => selectQan(q.id)}
+                    >
+                      <span className="qan-pick-number">{q.qanNumber}</span>
+                      {q.title ? <span className="qan-pick-title">{q.title}</span> : null}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+
+          {selectedQan && (
+            <p className="selected-qan-chip">
+              Selected: <strong>{selectedQan.qanNumber}</strong>
+              {selectedQan.title ? ` — ${selectedQan.title}` : ''}
+            </p>
+          )}
+          {qanId === 'all' && (
+            <p className="selected-qan-chip">
+              Selected: <strong>All active QANs</strong>
+            </p>
+          )}
         </div>
 
         <div className="field">
@@ -226,7 +281,7 @@ export default function QanCheckPanel({ qans = [], qansLoading = false }) {
         </div>
 
         <div className="check-actions">
-          <button type="submit" disabled={loading || qansLoading || filteredQans.length === 0}>
+          <button type="submit" disabled={loading || qansLoading || !qanId}>
             {loading ? 'Checking…' : 'Check serials'}
           </button>
           {(serialText || bulk) && (
